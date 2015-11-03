@@ -2,20 +2,20 @@ require 'helper'
 
 class GlobalIDTest < ActiveSupport::TestCase
   test 'value equality' do
-    assert_equal GlobalID.new('gid://app/model/id'), GlobalID.new('gid://app/model/id')
+    assert_equal PreGlobalID.new('gid://app/model/id'), PreGlobalID.new('gid://app/model/id')
   end
 
   test 'invalid app name' do
     assert_raises ArgumentError do
-      GlobalID.app = ''
+      PreGlobalID.app = ''
     end
 
     assert_raises ArgumentError do
-      GlobalID.app = 'blog_app'
+      PreGlobalID.app = 'blog_app'
     end
 
     assert_raises ArgumentError do
-      GlobalID.app = nil
+      PreGlobalID.app = nil
     end
   end
 end
@@ -23,15 +23,15 @@ end
 class GlobalIDParamEncodedTest < ActiveSupport::TestCase
   setup do
     model = Person.new('id')
-    @gid = GlobalID.create(model)
+    @gid = PreGlobalID.create(model)
   end
 
   test 'parsing' do
-    assert_equal GlobalID.parse(@gid.to_param), @gid
+    assert_equal PreGlobalID.parse(@gid.to_param), @gid
   end
 
   test 'finding' do
-    found = GlobalID.find(@gid.to_param)
+    found = PreGlobalID.find(@gid.to_param)
     assert_kind_of @gid.model_class, found
     assert_equal @gid.model_id, found.id
   end
@@ -40,10 +40,10 @@ end
 class GlobalIDCreationTest < ActiveSupport::TestCase
   setup do
     @uuid = '7ef9b614-353c-43a1-a203-ab2307851990'
-    @person_gid = GlobalID.create(Person.new(5))
-    @person_uuid_gid = GlobalID.create(Person.new(@uuid))
-    @person_namespaced_gid = GlobalID.create(Person::Child.new(4))
-    @person_model_gid = GlobalID.create(PersonModel.new(id: 1))
+    @person_gid = PreGlobalID.create(Person.new(5))
+    @person_uuid_gid = PreGlobalID.create(Person.new(@uuid))
+    @person_namespaced_gid = PreGlobalID.create(Person::Child.new(4))
+    @person_model_gid = PreGlobalID.create(PersonModel.new(id: 1))
   end
 
   test 'find' do
@@ -76,13 +76,13 @@ class GlobalIDCreationTest < ActiveSupport::TestCase
   end
 
   test 'find with module' do
-    assert_equal Person.find(@person_gid.model_id), @person_gid.find(only: GlobalID::Identification)
+    assert_equal Person.find(@person_gid.model_id), @person_gid.find(only: PreGlobalID::Identification)
     assert_equal Person.find(@person_uuid_gid.model_id),
-                 @person_uuid_gid.find(only: GlobalID::Identification)
+                 @person_uuid_gid.find(only: PreGlobalID::Identification)
     assert_equal PersonModel.find(@person_model_gid.model_id),
                  @person_model_gid.find(only: ActiveModel::Model)
     assert_equal Person::Child.find(@person_namespaced_gid.model_id),
-                 @person_namespaced_gid.find(only: GlobalID::Identification)
+                 @person_namespaced_gid.find(only: PreGlobalID::Identification)
   end
 
   test 'find with module no match' do
@@ -110,13 +110,13 @@ class GlobalIDCreationTest < ActiveSupport::TestCase
 
   test 'find with multiple module' do
     assert_equal Person.find(@person_gid.model_id),
-                 @person_gid.find(only: [Enumerable, GlobalID::Identification])
+                 @person_gid.find(only: [Enumerable, PreGlobalID::Identification])
     assert_equal Person.find(@person_uuid_gid.model_id),
-                 @person_uuid_gid.find(only: [Bignum, GlobalID::Identification])
+                 @person_uuid_gid.find(only: [Bignum, PreGlobalID::Identification])
     assert_equal PersonModel.find(@person_model_gid.model_id),
                  @person_model_gid.find(only: [String, ActiveModel::Model])
     assert_equal Person::Child.find(@person_namespaced_gid.model_id),
-                 @person_namespaced_gid.find(only: [Integer, GlobalID::Identification])
+                 @person_namespaced_gid.find(only: [Integer, PreGlobalID::Identification])
   end
 
   test 'find with multiple module no match' do
@@ -135,16 +135,16 @@ class GlobalIDCreationTest < ActiveSupport::TestCase
 
   test 'as param' do
     assert_equal 'Z2lkOi8vYmN4L1BlcnNvbi81', @person_gid.to_param
-    assert_equal @person_gid, GlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbi81')
+    assert_equal @person_gid, PreGlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbi81')
 
     assert_equal 'Z2lkOi8vYmN4L1BlcnNvbi83ZWY5YjYxNC0zNTNjLTQzYTEtYTIwMy1hYjIzMDc4NTE5OTA', @person_uuid_gid.to_param
-    assert_equal @person_uuid_gid, GlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbi83ZWY5YjYxNC0zNTNjLTQzYTEtYTIwMy1hYjIzMDc4NTE5OTA')
+    assert_equal @person_uuid_gid, PreGlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbi83ZWY5YjYxNC0zNTNjLTQzYTEtYTIwMy1hYjIzMDc4NTE5OTA')
 
     assert_equal 'Z2lkOi8vYmN4L1BlcnNvbjo6Q2hpbGQvNA', @person_namespaced_gid.to_param
-    assert_equal @person_namespaced_gid, GlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbjo6Q2hpbGQvNA')
+    assert_equal @person_namespaced_gid, PreGlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbjo6Q2hpbGQvNA')
 
     assert_equal 'Z2lkOi8vYmN4L1BlcnNvbk1vZGVsLzE', @person_model_gid.to_param
-    assert_equal @person_model_gid, GlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbk1vZGVsLzE')
+    assert_equal @person_model_gid, PreGlobalID.parse('Z2lkOi8vYmN4L1BlcnNvbk1vZGVsLzE')
   end
 
   test 'as URI' do
@@ -176,26 +176,26 @@ class GlobalIDCreationTest < ActiveSupport::TestCase
   end
 
   test ':app option' do
-    person_gid = GlobalID.create(Person.new(5))
+    person_gid = PreGlobalID.create(Person.new(5))
     assert_equal 'gid://bcx/Person/5', person_gid.to_s
 
-    person_gid = GlobalID.create(Person.new(5), app: "foo")
+    person_gid = PreGlobalID.create(Person.new(5), app: "foo")
     assert_equal 'gid://foo/Person/5', person_gid.to_s
 
     assert_raise ArgumentError do
-      person_gid = GlobalID.create(Person.new(5), app: nil)
+      person_gid = PreGlobalID.create(Person.new(5), app: nil)
     end
   end
 end
 
 class GlobalIDCustomParamsTest < ActiveSupport::TestCase
   test 'create custom params' do
-    gid = GlobalID.create(Person.new(5), hello: 'world')
+    gid = PreGlobalID.create(Person.new(5), hello: 'world')
     assert_equal 'world', gid.params[:hello]
   end
 
   test 'parse custom params' do
-    gid = GlobalID.parse 'gid://bcx/Person/5?hello=world'
+    gid = PreGlobalID.parse 'gid://bcx/Person/5?hello=world'
     assert_equal 'world', gid.params[:hello]
   end
 end

@@ -3,14 +3,14 @@ require 'active_support/core_ext/string/inflections'  # For #model_class constan
 require 'active_support/core_ext/array/access'
 require 'active_support/core_ext/object/try'          # For #find
 require 'active_support/core_ext/module/delegation'
-require 'global_id/uri/gid'
+require 'pre_global_id/uri/gid'
 
-class GlobalID
+class PreGlobalID
   class << self
     attr_reader :app
 
     def create(model, options = {})
-      if app = options.fetch(:app) { GlobalID.app }
+      if app = options.fetch(:app) { PreGlobalID.app }
         params = options.except(:app, :verifier, :for)
         new URI::GID.create(app, model, params), options
       else
@@ -61,7 +61,7 @@ class GlobalID
   end
 
   def ==(other)
-    other.is_a?(GlobalID) && @uri == other.uri
+    other.is_a?(PreGlobalID) && @uri == other.uri
   end
 
   def to_param

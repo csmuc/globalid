@@ -1,7 +1,7 @@
 require 'active_support'
 require 'active_support/core_ext/enumerable' # For Enumerable#index_by
 
-class GlobalID
+class PreGlobalID
   module Locator
     class << self
       # Takes either a GlobalID or a string that can be turned into a GlobalID
@@ -13,7 +13,7 @@ class GlobalID
       #   instances of returned classes to those including that module.  If no classes or
       #   modules match, +nil+ is returned.
       def locate(gid, options = {})
-        if gid = GlobalID.parse(gid)
+        if gid = PreGlobalID.parse(gid)
           locator_for(gid).locate gid if find_allowed?(gid.model_class, options[:only])
         end
       end
@@ -87,7 +87,7 @@ class GlobalID
         end
 
         def parse_allowed(gids, only = nil)
-          gids.collect { |gid| GlobalID.parse(gid) }.compact.select { |gid| find_allowed?(gid.model_class, only) }
+          gids.collect { |gid| PreGlobalID.parse(gid) }.compact.select { |gid| find_allowed?(gid.model_class, only) }
         end
 
         def normalize_app(app)

@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'active_support'
 require 'active_support/testing/autorun'
 
-require 'global_id'
+require 'pre_global_id'
 require 'models/person'
 require 'models/person_model'
 
@@ -13,7 +13,7 @@ if ActiveSupport::TestCase.respond_to?(:test_order=)
   ActiveSupport::TestCase.test_order = :random
 end
 
-GlobalID.app = 'bcx'
+PreGlobalID.app = 'bcx'
 
 # Default serializers is Marshal, whose format changed 1.9 -> 2.0,
 # so use a trivial serializer for our tests.

@@ -1,5 +1,5 @@
 class Person
-  include GlobalID::Identification
+  include PreGlobalID::Identification
 
   HARDCODED_ID_FOR_MISSING_PERSON = '1000'
 
