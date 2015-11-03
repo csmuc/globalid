@@ -20,4 +20,3 @@ GlobalID.app = 'bcx'
 SERIALIZER = JSON
 
 VERIFIER = ActiveSupport::MessageVerifier.new('muchSECRETsoHIDDEN', serializer: SERIALIZER)
-SignedGlobalID.verifier = VERIFIER

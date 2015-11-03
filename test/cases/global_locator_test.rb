@@ -4,7 +4,6 @@ class GlobalLocatorTest < ActiveSupport::TestCase
   setup do
     model = Person.new('id')
     @gid  = model.to_gid
-    @sgid = model.to_sgid
   end
 
   test 'by GID' do
@@ -70,87 +69,6 @@ class GlobalLocatorTest < ActiveSupport::TestCase
       GlobalID::Locator.locate_many([ Person.new('1').to_gid, Person::Child.new('1').to_gid, Person.new('2').to_gid ], only: Person::Child)
   end
 
-
-  test 'by SGID' do
-    found = GlobalID::Locator.locate_signed(@sgid)
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by SGID with only: restriction with match' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: Person)
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by SGID with only: restriction with match subclass' do
-    instance = Person::Child.new
-    sgid = instance.to_sgid
-    found = GlobalID::Locator.locate_signed(sgid, only: Person)
-    assert_kind_of sgid.model_class, found
-    assert_equal sgid.model_id, found.id
-  end
-
-  test 'by SGID with only: restriction with no match' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: String)
-    assert_nil found
-  end
-
-  test 'by SGID with only: restriction by multiple types' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: [String, Person])
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by SGID with only: restriction by module' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: GlobalID::Identification)
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by SGID with only: restriction by module no match' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: Enumerable)
-    assert_nil found
-  end
-
-  test 'by SGID with only: restriction by multiple types w/module' do
-    found = GlobalID::Locator.locate_signed(@sgid, only: [String, GlobalID::Identification])
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by many SGIDs of one class' do
-    assert_equal [ Person.new('1'), Person.new('2') ],
-      GlobalID::Locator.locate_many_signed([ Person.new('1').to_sgid, Person.new('2').to_sgid ])
-  end
-
-  test 'by many SGIDs of mixed classes' do
-    assert_equal [ Person.new('1'), Person::Child.new('1'), Person.new('2') ],
-      GlobalID::Locator.locate_many_signed([ Person.new('1').to_sgid, Person::Child.new('1').to_sgid, Person.new('2').to_sgid ])
-  end
-
-  test 'by many SGIDs with only: restriction to match subclass' do
-    assert_equal [ Person::Child.new('1') ],
-      GlobalID::Locator.locate_many_signed([ Person.new('1').to_sgid, Person::Child.new('1').to_sgid, Person.new('2').to_sgid ], only: Person::Child)
-  end
-
-  test 'by GID string' do
-    found = GlobalID::Locator.locate(@gid.to_s)
-    assert_kind_of @gid.model_class, found
-    assert_equal @gid.model_id, found.id
-  end
-
-  test 'by SGID string' do
-    found = GlobalID::Locator.locate_signed(@sgid.to_s)
-    assert_kind_of @sgid.model_class, found
-    assert_equal @sgid.model_id, found.id
-  end
-
-  test 'by many SGID strings with for: restriction to match purpose' do
-    assert_equal [ Person::Child.new('2') ],
-      GlobalID::Locator.locate_many_signed([ Person.new('1').to_sgid(for: 'adoption').to_s, Person::Child.new('1').to_sgid.to_s, Person::Child.new('2').to_sgid(for: 'adoption').to_s ], for: 'adoption', only: Person::Child)
-  end
-
   test 'by to_param encoding' do
     found = GlobalID::Locator.locate(@gid.to_param)
     assert_kind_of @gid.model_class, found
@@ -159,10 +77,6 @@ class GlobalLocatorTest < ActiveSupport::TestCase
 
   test 'by non-GID returns nil' do
     assert_nil GlobalID::Locator.locate 'This is not a GID'
-  end
-
-  test 'by non-SGID returns nil' do
-    assert_nil GlobalID::Locator.locate_signed 'This is not a SGID'
   end
 
   test 'by invalid GID URI returns nil' do
@@ -214,18 +128,11 @@ class GlobalLocatorTest < ActiveSupport::TestCase
 
   test "by valid purpose returns right model" do
     instance = Person.new
-    login_sgid = instance.to_signed_global_id(for: 'login')
+    login_gid = instance.to_global_id(for: 'login')
 
-    found = GlobalID::Locator.locate_signed(login_sgid.to_s, for: 'login')
-    assert_kind_of login_sgid.model_class, found
-    assert_equal login_sgid.model_id, found.id
-  end
-
-  test "by invalid purpose returns nil" do
-    instance = Person.new
-    login_sgid = instance.to_signed_global_id(for: 'login')
-
-    assert_nil GlobalID::Locator.locate_signed(login_sgid.to_s, for: 'like_button')
+    found = GlobalID::Locator.locate(login_gid.to_s, for: 'login')
+    assert_kind_of login_gid.model_class, found
+    assert_equal login_gid.model_id, found.id
   end
 
   test "by many with one record missing leading to a raise" do
